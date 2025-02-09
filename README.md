@@ -64,9 +64,9 @@ http://localhost:8080
 
 ## Output Classes
 - 0: Low concentration
-- 1: Moderately low concentration
-- 2: Moderately high concentration
-- 3: High concentration
+- 1: Normal concentration
+- 2: High concentration
+- 3: No face, No concentration
 
 ## Notes
 - Camera access permissions required
