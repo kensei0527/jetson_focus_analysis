@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Concentration Monitor</title>
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  <!-- animate.css -> should be <link> instead of <script> if pure CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  
+  <style>
+    :root {
+      --primary: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --neutral: #6b7280;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0; padding: 0;
+      background: #f8fafc; color: #1e293b;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin: 0; font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto; padding: 2rem;
+      background: #fff; border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
+                  0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .title {
+      text-align: center; margin-bottom: 2rem;
+      color: #334155; font-size: 1.5rem; font-weight: 600;
+    }
+    .buttons {
+      text-align: center; margin: 2rem 0;
+    }
+    button {
+      background: var(--primary); color: #fff;
+      border: none; padding: 0.75rem 2rem;
+      font-size: 1rem; font-weight: 500;
+      border-radius: 0.5rem; cursor: pointer;
+      transition: all 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(37,99,235,0.3);
+    }
+    #screen-intro, #screen-measuring, #screen-result {
+      display: none;
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #chart-container {
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    #latest-label-container {
+      margin-top: 2rem; text-align: center;
+    }
+    #latest-label-container h3 {
+      font-size: 1.25rem; font-weight: 500;
+      color: #475569; margin-bottom: 1rem;
+    }
+    .label-badge {
+      display: inline-block; padding: 0.625rem 1.25rem;
+      border-radius: 9999px; color: #fff; font-weight: 600;
+      font-size: 1.125rem; min-width: 80px; text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;
+    }
+    .label-0 { background-color: var(--danger); }
+    .label-1 { background-color: var(--warning); }
+    .label-2 { background-color: var(--success); }
+    .result-card {
+      margin: 2rem auto; background: #f9fafb;
+      border-radius: 0.75rem; padding: 1.5rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .result-card h4 {
+      margin: 0.5rem 0; color: #475569;
+    }
+    .breakpoint-list {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .breakpoint-list li::before {
+      content: "• "; color: #2563eb;
+    }
+    .highlight {
+      color: #2563eb; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My Concentration Monitor</h1>
+  </header>
+
+  <div class="container">
+    <!-- ========== Intro Screen ========== -->
+    <div id="screen-intro">
+      <h2 class="title">Ready to Start</h2>
+      <p style="text-align:center;">
+        Please press "Start Monitoring" when your camera and environment are ready.
+      </p>
+      <div class="buttons">
+        <button id="startBtn">Start Monitoring</button>
+      </div>
+    </div>
+
+    <!-- ========== Measuring Screen ========== -->
+    <div id="screen-measuring">
+      <h2 class="title">Monitoring in Progress...</h2>
+      <div id="chart-container">
+        <canvas id="myChart" width="800" height="400"></canvas>
+      </div>
+
+      <div id="latest-label-container">
+        <h3>Current Concentration Level: <span id="latestLabel" class="label-badge">-</span></h3>
+      </div>
+
+      <div class="buttons">
+        <button id="stopBtn">Stop Monitoring</button>
+      </div>
+    </div>
+
+    <!-- ========== Result Screen ========== -->
+    <div id="screen-result">
+      <h2 class="title">Results</h2>
+      <div id="scoreCard" class="result-card">
+        <div id="scoreSummary"></div>
+        <div id="breakPointsSection" style="display: none; margin-top:1rem;">
+          <h4>Focus Lost at:</h4>
+          <ul id="breakPointsList" class="breakpoint-list"></ul>
+        </div>
+        <div class="buttons" style="margin-top:2rem;">
+          <button id="restartBtn">Start New Session</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== Screen references ========== 
+    const screenIntro = document.getElementById('screen-intro');
+    const screenMeasuring = document.getElementById('screen-measuring');
+    const screenResult = document.getElementById('screen-result');
+
+    // ========== State management ==========
+    let isMeasuring = false;
+    let collectedData = [];
+    let measureIntervalId = null;
+    let myChart = null;
+
+    // ========== Button elements ==========
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    // ========== Data conversion function ==========
+    function convertLabelToNumber(lbl) {
+      // 0=Low,1=Normal,2=High,3=face-lost => 0
+      switch(lbl) {
+        case 0: return 0;
+        case 1: return 1;
+        case 2: return 2;
+        case 3: return 0;  // face lost => treat as 0 (Low)
+        default: return null;
+      }
+    }
+
+    // -------- Initialize screens ------
+    (function init() {
+      screenIntro.style.display = 'block';   // show intro
+      screenMeasuring.style.display = 'none';
+      screenResult.style.display = 'none';
+    })();
+
+    // ========== "Start Monitoring" ==========
+    startBtn.addEventListener('click', () => {
+      // 1) 先にサーバーのセッションリセット (POST /api/reset_session)
+      resetServerSession()
+        .then(() => {
+          // 2) UI 切り替え
+          screenIntro.style.display = 'none';
+          screenResult.style.display = 'none';
+          screenMeasuring.style.display = 'block';
+
+          // 3) 既存チャート破棄
+          if (myChart) {
+            myChart.destroy();
+            myChart = null;
+          }
+          collectedData = [];
+
+          // 4) 新チャート生成
+          const ctx = document.getElementById('myChart').getContext('2d');
+          myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: [],
+              datasets: [{
+                label: 'Concentration Level(0=Low,1=Normal,2=High)',
+                data: [],
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0,0,255,0.1)',
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              scales: {
+                x: {
+                  type: 'category',
+                  title: { display: true, text: 'Time(HH:MM:SS)' }
+                },
+                y: {
+                  type: 'linear',
+                  min: 0,
+                  max: 2,
+                  ticks: { stepSize: 1 },
+                  title: { display: true, text: 'Concentration Level(0=Low,1=Normal,2=High)' }
+                }
+              },
+              responsive: true,
+              plugins: {
+                legend: { display: true }
+              }
+            }
+          });
+
+          isMeasuring = true;
+
+          // 5) Start polling the server every 5 sec
+          measureIntervalId = setInterval(updateData, 5000);
+          updateData(); // immediate first call
+        })
+        .catch(err => console.error("resetServerSession failed:", err));
+    });
+
+    // ========== "Stop Monitoring" ==========
+    stopBtn.addEventListener('click', () => {
+      isMeasuring = false;
+      if (measureIntervalId) {
+        clearInterval(measureIntervalId);
+        measureIntervalId = null;
+      }
+
+      // Show result screen
+      screenMeasuring.style.display = 'none';
+      screenIntro.style.display = 'none';
+      screenResult.style.display = 'block';
+
+      // Analyze
+      const analysisResult = analyzeConcentration(collectedData);
+      const { totalFocusSec, maxStreakSec, breakPoints } = analysisResult;
+
+      const focusMin = (totalFocusSec / 60).toFixed(1);
+      const maxStreakMin = (maxStreakSec / 60).toFixed(1);
+
+      const scoreSummaryElem = document.getElementById('scoreSummary');
+      scoreSummaryElem.innerHTML = `
+        <h3>Total Focus Time: <span class="highlight">${focusMin} min</span></h3>
+        <h3>Longest Continuous Focus: <span class="highlight">${maxStreakMin} min</span></h3>
+      `;
+
+      const breakPointsSection = document.getElementById('breakPointsSection');
+      const breakPointsList = document.getElementById('breakPointsList');
+
+      if (breakPoints.length === 0) {
+        breakPointsSection.style.display = 'none';
+      } else {
+        breakPointsSection.style.display = 'block';
+        breakPointsList.innerHTML = '';
+        breakPoints.forEach(ts => {
+          const d = new Date(ts * 1000);
+          const li = document.createElement('li');
+          li.textContent = d.toLocaleTimeString();
+          breakPointsList.appendChild(li);
+        });
+      }
+    });
+
+    // ========== "Restart" button -> go back to intro ==========
+    restartBtn.addEventListener('click', () => {
+      // 1) chart destroy
+      if (myChart) {
+        console.log("[DEBUG] destroying chart now...");
+        myChart.destroy();
+        myChart = null;
+      }
+      // 2) container clear
+      const canvasContainer = document.getElementById('chart-container');
+      canvasContainer.innerHTML = '';
+      canvasContainer.innerHTML = '<canvas id="myChart" width="800" height="400"></canvas>';
+      collectedData = [];
+
+      // 3) Show intro
+      screenResult.style.display = 'none';
+      screenMeasuring.style.display = 'none';
+      screenIntro.style.display = 'block';
+    });
+
+    // ========== resetServerSession (POST /api/reset_session) ==========
+    function resetServerSession() {
+      return fetch('/api/reset_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(json => {
+        console.log("[resetServerSession] success:", json);
+      });
+    }
+
+    // ========== analyzeConcentration ==========
+    function analyzeConcentration(dataArray) {
+      let totalFocusSec = 0;       // 累計の集中時間(=val=2) 
+      let maxStreakSec = 0;       // 連続の最大集中時間
+      let currentStreak = 0;      // 今の連続集中時間
+      let breakPoints = [];       // 集中が切れた時刻を記録
+      let lastBreakTime = null;   // 最後に記録した「切れ時刻」 (同一時刻の重複登録を防ぐ)
+      
+      // 「サーバー呼び出し間隔(秒)」に合わせる
+      // 例: updateData() が 5秒毎に呼ばれるなら 5
+      const intervalSec = 5;
+
+      // 「集中度1が何回連続したか」をカウント
+      let consecutiveOne = 0; 
+
+      for (let i = 0; i < dataArray.length; i++) {
+        const { time, val } = dataArray[i];
+        
+        if (val === 2) {
+          // === 高集中 ===
+          // 連続集中時間＋累計集中時間を加算
+          totalFocusSec += intervalSec;
+          currentStreak += intervalSec;
+          // 1の連続はリセット
+          consecutiveOne = 0;
+          
+        } else if (val === 1) {
+          // === 普通(1) ===
+          // 3回連続で 1 が来たら集中切れ扱い
+          consecutiveOne++;
+          if (consecutiveOne >= 3) {
+            // ここで切れたと判定
+            // currentStreakをmaxと比較しリセット
+            if (currentStreak > maxStreakSec) {
+              maxStreakSec = currentStreak;
+            }
+            currentStreak = 0;
+
+            // 同一時刻かどうかチェックしてから breakPoints に追加
+            if (time !== lastBreakTime) {
+              breakPoints.push(time);
+              lastBreakTime = time;
+            }
+
+            // 連続1もリセット
+            consecutiveOne = 0;
+          }
+          
+        } else if (val === 0) {
+          // === 低集中(0) or 顔なし(3→0にマッピング) ===
+          // 1回で集中切れ
+          // currentStreakをmaxと比較しリセット
+          if (currentStreak > maxStreakSec) {
+            maxStreakSec = currentStreak;
+          }
+          currentStreak = 0;
+          consecutiveOne = 0;
+
+          // 同一時刻かどうかチェックしてから breakPoints に追加
+          if (time !== lastBreakTime) {
+            breakPoints.push(time);
+            lastBreakTime = time;
+          }
+        }
+      }
+
+      // 最終的に currentStreak が残っている場合、maxStreakSec と比較
+      if (currentStreak > maxStreakSec) {
+        maxStreakSec = currentStreak;
+      }
+
+      return {
+        totalFocusSec,  // 累計集中時間(秒)
+        maxStreakSec,   // 最大連続集中時間(秒)
+        breakPoints     // "集中切れ"判定が発生した時刻の配列
+      };
+    }
+
+    // ========== updateData -> fetch & update chart ==========
+    function updateData() {
+      fetch('/api/live_data')
+        .then(res => res.json())
+        .then(json => {
+          const dataArr = json.data;
+          const labels = dataArr.map(item => {
+            const dateObj = new Date(item.time * 1000);
+            return dateObj.toLocaleTimeString();
+          });
+          const concValues = dataArr.map(item => {
+            const val = convertLabelToNumber(item.label);
+            return (val !== null) ? val : null;
+          });
+
+          // Update chart
+          myChart.data.labels = labels;
+          myChart.data.datasets[0].data = concValues;
+          myChart.update();
+
+          // Collect local data for analysis
+          if (isMeasuring && dataArr.length > 0) {
+            const lastItem = dataArr[dataArr.length - 1];
+            const val = convertLabelToNumber(lastItem.label);
+            if (val !== null) {
+              // store the time, val
+              collectedData.push({ time: lastItem.time, val: val });
+            }
+          }
+        })
+        .catch(err => console.error('Error fetching /api/live_data:', err));
+
+      fetch('/api/current_label')
+        .then(res => res.json())
+        .then(json => {
+          const rawLabel = json.label;
+          const numericVal = convertLabelToNumber(rawLabel);
+          const latestLabelElem = document.getElementById('latestLabel');
+
+          let labelText = '---';
+          switch(numericVal) {
+            case 0: labelText = 'Low';    break;
+            case 1: labelText = 'Normal'; break;
+            case 2: labelText = 'High';   break;
+          }
+          latestLabelElem.textContent = labelText;
+
+          latestLabelElem.classList.remove('label-0','label-1','label-2');
+          if (numericVal === 0 || numericVal === 1 || numericVal === 2) {
+            latestLabelElem.classList.add(`label-${numericVal}`);
+          }
+        })
+        .catch(err => console.error('Error fetching /api/current_label:', err));
+    }
+  </script>
+</body>
+</html>

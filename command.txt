@@ -1,0 +1,82 @@
+sudo docker run -it --rm --runtime nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -e LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1 \
+    -v $PWD:/workspace \
+    -w /workspace \
+    my-docker-image:1.0 \
+    python3 landmark_blink_gaze_au.py
+
+docker build -t my-docker-image:1.0 .
+
+
+
+docker run -it --rm \
+  --runtime=nvidia \
+  -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+  -v ~/jaanet_weights/BP4D_combine_1_2:/opt/jaanet/trained_model \
+  my-docker-image:1.0
+
+# x86_64 + NVIDIA GPUの場合
+docker run -it --rm \
+    --runtime=nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -v $(pwd)/best_model2.pth:/best_model.pth \
+    -v /home/jetson/my_Docker_app/main_app.py/:/app/main_app.py/ \
+    -v /home/jetson/my_Docker_app/templates/:/app/templates/ \
+    -p 8082:8082 \
+    --device /dev/video0:/dev/video0 \
+    my-docker-image:1.1 \
+    python3 main_app.py \
+       --write_path_prefix="/app/jaanet_weights/" \
+       --run_name="BP4D_combine_1_2" \
+       --start_epoch=5 \
+       --retina_weights=Pytorch_Retinaface/weights/mobilenet0.25_Final.pth \
+       --retina_network=mobile0.25 \
+       --input_video=0 
+
+    
+docker run -it --rm \
+    --runtime=nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -v $(pwd)/best_model2.pth:/best_model2.pth \
+    -v /home/jetson/my_Docker_app/main_app2.py/:/app/main_app2.py/ \
+    -v /home/jetson/my_Docker_app/templates/:/app/templates/ \
+    -p 8080:8080 \
+    --device /dev/video0:/dev/video0 \
+    my-docker-image:1.1 \
+    python3 main_app2.py \
+       --write_path_prefix="/app/jaanet_weights/" \
+       --run_name="BP4D_combine_1_2" \
+       --start_epoch=5 \
+       --retina_weights=Pytorch_Retinaface/weights/mobilenet0.25_Final.pth \
+       --retina_network=mobile0.25 \
+       --input_video=0 
+
+
+docker run -it --rm \
+    --runtime=nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -w /app \
+    --device /dev/video0:/dev/video0 \
+    -p 5000:5000 \
+    -v /home/jetson/my_Docker_app/main_app/:/app/main_app/ \
+    my-docker-image:1.1 \
+    python3 app_test.py
+
+docker run -it --rm \
+    --runtime=nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -w /app \
+    --device /dev/video0:/dev/video0 \
+    -v /home/jetson/my_Docker_app/main_app/:/app/main_app/ \
+    my-docker-image:1.1 \
+    /bin/bash
+
+sudo docker image prune
+
+tegrastats
+
+sudo docker container prune
+
+Successfully built 4b446d6305e2
+Successfully tagged my-docker-image:1.0
