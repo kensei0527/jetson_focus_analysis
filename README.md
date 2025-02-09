@@ -11,7 +11,7 @@ This project implements a real-time concentration analysis system for Jetson dev
 - Real-time visualization through web interface
 
 ## Requirements
-- NVIDIA Jetson device
+- NVIDIA Jetson orin nano (Jetpack 5.1)
 - CUDA support
 - Python 3.8
 - PyTorch 2.0
