@@ -54,13 +54,13 @@ To simplify dependency management, the project provides a Dockerfile that includ
        --network host \
        --device /dev/video0 \
        focus-monitoring:latest \
-       python3 main_app2.py --input_video 0 --csv_out /output/au_result.csv
+       python3 main_app.py --input_video 0 --csv_out /output/au_result.csv
    ```
    In this command:
    - `--runtime nvidia` enables GPU usage
    - `--network host` allows the Flask web service to be accessed from the host
    - `--device /dev/video0` makes the camera accessible within the container
-   - The script `main_app2.py` is executed with input from the default camera and outputs results to `/output/au_result.csv`
+   - The script `main_app.py` is executed with input from the default camera and outputs results to `/output/au_result.csv`
 
    Note: For CSI cameras, the device may still be `/dev/video0`, but consult your Jetson camera settings if additional configuration is needed. To save the CSV output to the host, mount a host directory using `-v <host_directory>:/output`.
 
