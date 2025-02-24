@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a Focus Monitoring System that runs on the Jetson Orin Nano. The system analyzes real-time camera input to monitor the user's concentration level by detecting facial expressions and gaze direction. By combining face detection, facial landmark extraction, and machine learning inference, the system evaluates indicators such as blink frequency, gaze stability, and subtle changes in expression. The system outputs a concentration level on a 4-class scale (0 to 3), where a higher value indicates a higher degree of focus.
+This is a Focus Monitoring System that runs on the Jetson Orin Nano. The system analyzes real-time camera input to monitor the user's concentration level by detecting facial expressions and gaze direction. By combining face detection, facial landmark extraction, and machine learning inference, the system evaluates indicators such as blink frequency, gaze stability, and subtle changes in expression. The system outputs a concentration level on a 3-class scale (0 to 2), where a higher value indicates a higher degree of focus.
 
 The project leverages the following technology stack:
 - OpenCV for video capture and preprocessing
