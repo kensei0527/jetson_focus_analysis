@@ -50,11 +50,20 @@ To simplify dependency management, the project provides a Dockerfile that includ
 5. **Run the Docker Container:**
    Launch the container using the built image. For example, if your USB camera is at `/dev/video0`, run:
    ```bash
-   sudo docker run -it --rm --runtime nvidia \
-       --network host \
-       --device /dev/video0 \
-       focus-monitoring:latest \
-       python3 main_app.py --input_video 0 --csv_out /output/au_result.csv
+   docker run -it --rm \
+    --runtime=nvidia \
+    -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    -v $(pwd)/best_model.pth:/best_model.pth \
+    -p 8082:8082 \
+    --device /dev/video0:/dev/video0 \
+    focus-monitoring:latest  \
+    python3 main_app.py \
+       --write_path_prefix="/app/jaanet_weights/" \
+       --run_name="BP4D_combine_1_2" \
+       --start_epoch=5 \
+       --retina_weights=Pytorch_Retinaface/weights/mobilenet0.25_Final.pth \
+       --retina_network=mobile0.25 \
+       --input_video=0 
    ```
    In this command:
    - `--runtime nvidia` enables GPU usage
