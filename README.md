@@ -35,7 +35,7 @@ To simplify dependency management, the project provides a Dockerfile that includ
 
 3. **Place Required Files:**
    The following model files must be in place:
-   - RetinaFace Pre-trained Model: Place `mobilenet0.25_Final.pth` in the `Pytorch_Retinaface/weights/` directory. This file can be downloaded from the official RetinaFace GitHub repository.
+   - RetinaFace Pre-trained Model: Place `mobilenet0.25_Final.pth` in the `Pytorch_Retinaface/weights/` directory. This file can be downloaded from the official RetinaFace GitHub repository. (https://drive.google.com/drive/folders/1oZRSG0ZegbVkVwUd8wUIQx8W7yfZ_ki1)
    - JAANet Weights: Download the JAANet weights from the official repository and place them in the `jaanet_weights/` directory.
    - MLP Model for Focus Classification: Ensure that the file (e.g., `best_model2.pth`) is available in the project's root or specify its path using the `--mlp_path` argument at runtime.
 
