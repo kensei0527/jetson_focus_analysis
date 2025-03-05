@@ -896,7 +896,7 @@ def inference_loop():
                 mean_blink = float(np.mean(blink_array))
                 mean_gaze  = float(np.mean(gaze_array))
 
-                print(f"[inference_loop] session_dataに追加 time={now_sec:.2f}, label={pred_label}, blink={mean_blink:.2f}, gaze={mean_gaze:.2f}")
+                #print(f"[inference_loop] session_dataに追加 time={now_sec:.2f}, label={pred_label}, blink={mean_blink:.2f}, gaze={mean_gaze:.2f}")
 
                 session_data.append({
                     "time": now_sec,
@@ -905,7 +905,7 @@ def inference_loop():
                     "label": pred_label
                 })
 
-                print(f"[inference_loop] session_dataに追加 time={now_sec:.2f}, label={pred_label}, blink={mean_blink:.2f}, gaze={mean_gaze:.2f}")
+                #print(f"[inference_loop] session_dataに追加 time={now_sec:.2f}, label={pred_label}, blink={mean_blink:.2f}, gaze={mean_gaze:.2f}")
                 # バッファをクリアして次の15秒へ
                 feature_buffer.clear()
 
@@ -996,7 +996,7 @@ if __name__ == "__main__":
 
     # Flask起動
     try:
-        app.run(host="0.0.0.0", port=8000, debug=True)
+        app.run(host="0.0.0.0", port=8082, debug=False )
     finally:
         is_running = False
         t.join()
