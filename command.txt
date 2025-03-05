@@ -20,12 +20,10 @@ docker run -it --rm \
 docker run -it --rm \
     --runtime=nvidia \
     -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    -v $(pwd)/best_model2.pth:/best_model.pth \
-    -v /home/jetson/my_Docker_app/main_app.py/:/app/main_app.py/ \
-    -v /home/jetson/my_Docker_app/templates/:/app/templates/ \
+    -v $(pwd)/best_model.pth:/best_model.pth \
     -p 8082:8082 \
     --device /dev/video0:/dev/video0 \
-    my-docker-image:1.1 \
+    focus-monitoring:latest  \
     python3 main_app.py \
        --write_path_prefix="/app/jaanet_weights/" \
        --run_name="BP4D_combine_1_2" \

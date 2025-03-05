@@ -304,24 +304,24 @@ COPY jaanet_weights /app/jaanet_weights
 COPY templates/index.html /app/templates/index.html
 
 #    - "run_jaanet_realtime.py" + その他Pythonスクリプト
-COPY run_jaanet_realtime.py /app/
-COPY check_mat.py /app/
-COPY face_alignment_test.py /app/
+# COPY run_jaanet_realtime.py /app/
+# COPY check_mat.py /app/
+# COPY face_alignment_test.py /app/
 COPY landmark_blink_gaze_au.py /app/
 COPY main_app.py /app/
-COPY main_app2.py /app/
+# COPY main_app2.py /app/
 COPY my_script.py /app/
 COPY network.py /app/
 COPY best_model.pth /app/
-COPY best_model2.pth /app/
+# COPY best_model2.pth /app/
 
 
 # (5) Pytorch_Retinaface フォルダをコピー
 COPY Pytorch_Retinaface /app/Pytorch_Retinaface
-
+COPY weights /app/weights
 #    - reflect_66.mat
 COPY reflect_66.mat /app/
-COPY app_test.py /app/
+# COPY app_test.py /app/
 
 # 5) 動画ファイル or テスト用ファイルをコピー (任意)
 #COPY IMG_7721.mp4 /app/
