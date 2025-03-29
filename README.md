@@ -179,7 +179,7 @@ This section outlines the internal structure and processing flow of the system:
    Each second, the system aggregates the blink count, average gaze speed, and the 24-dimensional AU features into a 26-dimensional feature vector. A time-series buffer collects 15 such vectors (one per second) to form a 390-dimensional feature vector representing the last 15 seconds of activity.
 
 7. **Focus Classification:**
-   Every 15 seconds, the 390-dimensional feature vector is fed into a pre-trained MLP classifier. The MLP outputs scores for 4 classes (0, 1, 2, 3) and selects the class with the highest score as the current focus level. For instance, a label of 3 indicates high concentration, while 0 indicates low focus.
+   Every 15 seconds, the 390-dimensional feature vector is fed into a pre-trained MLP classifier. The MLP outputs scores for 4 classes (0, 1, 2) and selects the class with the highest score as the current focus level. For instance, a label of 2 indicates high concentration, while 0 indicates low focus.
 
 8. **Result Logging and Distribution:**
    The resulting focus level is stored in a global variable and served via Flask's API. The aggregated data (including average blink count, gaze speed, and focus label) is also appended as a new row in a CSV file for later analysis. The Flask dashboard uses this data to provide real-time visual feedback.
