@@ -121,7 +121,7 @@ If you prefer not to use Docker, follow these steps to install the environment d
 7. **Run the System:**
    With everything set up, launch the main script:
    ```bash
-   python3 main_app2.py --input_video 0 --csv_out ./au_result.csv
+   python3 main_app.py --input_video 0 --csv_out ./au_result.csv
    ```
    Ensure that the code does not rely on display functions (like `cv2.imshow`) if you are running in a headless environment, as the system uses Flask for visualization.
 
@@ -132,10 +132,10 @@ Once running, you should see log messages indicating frame processing and focus 
 After completing the setup, you can operate the system as follows:
 
 ### Basic Execution:
-Start the system by running the `main_app2.py` script. If using Docker, the command provided above in the Docker section starts the process. When running directly on the host, execute:
+Start the system by running the `main_app.py` script. If using Docker, the command provided above in the Docker section starts the process. When running directly on the host, execute:
 
 ```bash
-python3 main_app2.py --input_video 0 --csv_out ./au_result.csv
+python3 main_app.py --input_video 0 --csv_out ./au_result.csv
 ```
 
 The primary command-line options include:
