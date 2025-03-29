@@ -37,7 +37,7 @@ To simplify dependency management, the project provides a Dockerfile that includ
    The following model files must be in place:
    - RetinaFace Pre-trained Model: Place `mobilenet0.25_Final.pth`,`Resnet50_Final.pth`, `mobilenetV1X0.25_pretrain.tar` in the `jetson_focus_analysis/weights/` directory. This file can be downloaded from the official RetinaFace GitHub repository. (https://drive.google.com/drive/folders/1oZRSG0ZegbVkVwUd8wUIQx8W7yfZ_ki1)
    - JAANet Weights: Download the JAANet weights from the official repository and place them in the `jaanet_weights/` directory.
-   - MLP Model for Focus Classification: Ensure that the file (e.g., `best_model2.pth`) is available in the project's root or specify its path using the `--mlp_path` argument at runtime.
+   - MLP Model for Focus Classification: Ensure that the file (e.g., `best_model.pth`) is available in the project's root or specify its path using the `--mlp_path` argument at runtime.
 
 4. **Build the Docker Image:**
    In the project directory, run:
@@ -54,7 +54,7 @@ To simplify dependency management, the project provides a Dockerfile that includ
     --runtime=nvidia \
     -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
     -v $(pwd)/best_model.pth:/best_model.pth \
-    -p 8082:8082 \
+    -p 8080:8080 \
     --device /dev/video0:/dev/video0 \
     focus-monitoring:latest  \
     python3 main_app.py \
@@ -141,39 +141,17 @@ python3 main_app2.py --input_video 0 --csv_out ./au_result.csv
 The primary command-line options include:
 - `--input_video`: Specifies the video input. The default value (0) uses the default camera. To analyze a video file, supply the file path (e.g., `--input_video sample.mp4`).
 - `--csv_out`: Specifies the output CSV file path. The system appends analysis results every 15 seconds to this CSV. In Docker, it is set to `/output/au_result.csv` (with a shared host volume); on a local system, you might use something like `--csv_out ./result.csv`.
-- `--mlp_path`: The path to the pre-trained MLP model for focus classification. The default is `best_model2.pth` in the project root. Adjust this if your model file is stored elsewhere.
+- `--mlp_path`: The path to the pre-trained MLP model for focus classification. The default is `best_model.pth` in the project root. Adjust this if your model file is stored elsewhere.
 - Other optional parameters (e.g., `--confidence_threshold`, `--retina_network`, etc.) are provided for fine-tuning. Typically, the defaults are sufficient; refer to the code's `parser.add_argument` section for details.
 
 ### System Operation:
 Once started, the system processes video frames continuously in a background thread. It performs face detection, facial landmark extraction, and then aggregates features over 15-second intervals to compute the focus level via the MLP classifier. Simultaneously, a Flask web server launches on port 8080 to provide a dashboard with real-time focus metrics.
 
 ### Output Data:
-1. **Real-Time Monitoring (Web UI):**
+**Real-Time Monitoring (Web UI):**
    After startup, open a browser on any device in the same network and navigate to `http://<Jetson_IP>:8080` (for example, `http://192.168.1.10:8080`). The dashboard displays the current focus level and a time-series graph showing focus trends.
 
-2. **REST API:**
-   The Flask server also exposes JSON-based APIs:
-   - `/api/current_label`: Returns the most recent focus classification (e.g., `{ "label": 2 }` where the label ranges from 0 to 3; -1 indicates no data).
-   - `/api/live_data`: Returns time-series data from the session in JSON format, for example:
-     ```json
-     {
-       "data": [
-         { "time": 15.0, "blink": 2.0, "gaze": 3.4, "label": 2 },
-         { "time": 30.0, "blink": 1.0, "gaze": 2.8, "label": 3 },
-         ...
-       ]
-     }
-     ```
-     Here, `time` represents the elapsed time in seconds, `blink` the average blink count, `gaze` the average gaze speed, and `label` the corresponding focus level.
 
-3. **CSV Log File:**
-   The CSV file specified by `--csv_out` logs the aggregated features and classification results every 15 seconds. Each row typically includes a timestamp, average blink count, average gaze speed, and the focus level label, for example:
-   ```csv
-   time,blink,gaze,label
-   15.0,2.0,3.4,2
-   30.0,1.0,2.8,3
-   ```
-   This CSV can be opened in Excel or other analysis tools for further review.
 
 ### Stopping the System:
 Terminate the system by pressing Ctrl+C in the terminal. The program handles shutdown gracefully, stopping background threads and closing the CSV file (displaying a message like "Done. CSV saved." upon completion).
